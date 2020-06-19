@@ -4,6 +4,7 @@ metadata:
   name: kiali
   annotations:
     ansible.operator-sdk/verbosity: "1"
+    ansible.operator-sdk/reconcile-period: "60s"
 spec:
   istio_namespace: ${ISTIO_NAMESPACE}
   version: "${KIALI_CR_SPEC_VERSION}"
