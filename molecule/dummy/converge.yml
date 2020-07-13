@@ -2,7 +2,7 @@
   hosts: localhost
   connection: local
   vars:
-    custom_dummy_var: "{{ lookup('env', 'DUMMY_VAR') | default('fail', true) }}"
+    custom_dummy_var: "{{ lookup('env', 'DUMMY_VAR') | default('pass', true) }}"
   tasks:
   - debug:
       msg: "custom dummy var is [{{ custom_dummy_var }}]"
