@@ -1,0 +1,7 @@
+- name: dummy Destroy
+  hosts: localhost
+  connection: local
+  tasks:
+  - name: Dummy destroy task
+    debug:
+      msg: "Dummy destroy task msg"

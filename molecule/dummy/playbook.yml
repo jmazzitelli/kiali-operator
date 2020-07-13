@@ -1,0 +1,12 @@
+- name: dummy Tests
+  hosts: localhost
+  connection: local
+  vars:
+    custom_dummy_var: "{{ lookup('env', 'DUMMY_VAR') | default('fail', true) }}"
+  tasks:
+  - debug:
+      msg: "custom dummy var is [{{ custom_dummy_var }}]"
+  - name: Make sure the dummy test passes
+    assert:
+      that:
+      - custom_dummy_var == "pass"

@@ -1,0 +1,29 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+platforms:
+- name: default
+  groups:
+  - k8s
+provisioner:
+  name: ansible
+  config_options:
+    defaults:
+      callback_whitelist: junit
+  playbooks:
+    destroy: destroy.yml
+    prepare: prepare.yml
+    cleanup: cleanup.yml
+  inventory:
+    group_vars:
+      all:
+        molecule_project_dir : "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}"
+        dummy_group_var: group
+scenario:
+  name: dummy
+  test_sequence:
+  - prepare
+  - converge
+  - destroy

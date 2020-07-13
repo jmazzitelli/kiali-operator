@@ -1,0 +1,7 @@
+- name: dummy Cleanup
+  hosts: localhost
+  connection: local
+  tasks:
+  - name: dummy Cleanup task
+    debug:
+      msg: "dummy Cleanup task msg"
