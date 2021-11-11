@@ -25,8 +25,8 @@ provisioner:
         istio:
           control_plane_namespace: istio-system
         openshift:
-          username: kiali
-          password: kiali
+          username: "{{ lookup('env', 'MOLECULE_OPENSHIFT_USERNAME') | default('kiali', True) }}"
+          password: "{{ lookup('env', 'MOLECULE_OPENSHIFT_PASSWORD') | default('kiali', True) }}"
         kiali:
           spec_version: "{{ lookup('env', 'MOLECULE_KIALI_CR_SPEC_VERSION') | default('default', True) }}"
           install_namespace: istio-system
