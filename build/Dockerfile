@@ -15,8 +15,6 @@ COPY watches-os.yaml ${HOME}/watches-os.yaml
 
 # pull in jmespath py library for json processing
 RUN python3 -m pip install jmespath
-# TODO pull in openshift py library for operator_sdk.util (in the future, this dependency will not be needed, but for now, it is.)
-RUN python3 -m pip install openshift
 
 COPY requirements.yml ${HOME}/requirements.yml
 RUN ansible-galaxy collection install -r ${HOME}/requirements.yml \
