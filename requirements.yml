@@ -10,14 +10,14 @@
 # podman run \
 #   -it --rm --entrypoint '' \
 #   quay.io/openshift/origin-ansible-operator:4.13 \
-#   ls /opt/ansible/.ansible/collections/ansible_collections
+#   ansible-galaxy collection list
 #
-# To determine the version of a specific collection, look at the MANIFEST.json:
+# To determine the version of a specific collection:
 #
 # podman run \
 #   -it --rm --entrypoint '' \
 #   quay.io/openshift/origin-ansible-operator:4.13 \
-#   cat /opt/ansible/.ansible/collections/ansible_collections/kubernetes/core/MANIFEST.json | grep version
+#   ansible-galaxy collection list kubernetes.core
 #
 # It is best if you have the same version of Ansible installed locally as found in the base image. You can determine
 # the version of Ansible in the base image via:
@@ -35,7 +35,7 @@
 
 collections:
 - name: community.general
-  version: 7.1.0
+  version: 7.5.0
 - name: kubernetes.core
   version: 2.4.0
 - name: operator_sdk.util
