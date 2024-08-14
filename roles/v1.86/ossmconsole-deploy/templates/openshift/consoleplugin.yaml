@@ -13,9 +13,8 @@ spec:
       basePath: "/"
     type: Service
   proxy:
-  - type: Service
-    alias: kiali
-    authorize: true
+  - alias: kiali
+    authorization: UserToken
     endpoint:
       service:
         name: {{ ossmconsole_vars.kiali.serviceName }}
