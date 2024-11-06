@@ -144,6 +144,9 @@ entries:
       - name: kiali-operator.v2.1.0
         replaces: kiali-operator.v2.0.0
         skipRange: '>=1.0.0 <2.1.0'
+      - name: kiali-operator.v2.2.0
+        replaces: kiali-operator.v2.1.0
+        skipRange: '>=1.0.0 <2.2.0'
     name: alpha
     package: kiali
     schema: olm.channel
@@ -285,6 +288,9 @@ entries:
       - name: kiali-operator.v2.1.0
         replaces: kiali-operator.v2.0.0
         skipRange: '>=1.0.0 <2.1.0'
+      - name: kiali-operator.v2.2.0
+        replaces: kiali-operator.v2.1.0
+        skipRange: '>=1.0.0 <2.2.0'
     name: stable
     package: kiali
     schema: olm.channel
