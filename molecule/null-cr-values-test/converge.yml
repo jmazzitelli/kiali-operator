@@ -21,22 +21,22 @@
       - kiali_configmap.installation_tag == ""
       - kiali_configmap.additional_display_details | length == 1
       - kiali_configmap.custom_dashboards | length == 0
-      - kiali_configmap.deployment.configmap_annotations | length == 0
+      - kiali_configmap.deployment.configmap.annotations | length == 0
       - kiali_configmap.deployment.discovery_selectors | length == 0
-      - kiali_configmap.deployment.replicas == 1
+      - kiali_configmap.deployment.workload.replicas == 1
       - kiali_configmap.deployment.secret_name == "kiali"
-      - kiali_configmap.deployment.logger.log_format == "text"
-      - kiali_configmap.deployment.logger.log_level == "info"
-      - kiali_configmap.deployment.logger.time_field_format == "2006-01-02T15:04:05Z07:00"
-      - kiali_configmap.deployment.logger.sampler_rate == "1"
-      - kiali_configmap.deployment.pod_annotations | length == 1
-      - kiali_configmap.deployment.pod_annotations['proxy.istio.io/config'] == '{ "holdApplicationUntilProxyStarts": true }'
-      - kiali_configmap.deployment.pod_labels | length == 0
-      - kiali_configmap.deployment.resources | length == 2
-      - kiali_configmap.deployment.resources.requests.cpu == "10m"
-      - kiali_configmap.deployment.resources.requests.memory == "64Mi"
-      - kiali_configmap.deployment.resources.limits.memory == "1Gi"
-      - kiali_configmap.deployment.service_annotations | length == 0
+      - kiali_configmap.server.observability.logger.log_format == "text"
+      - kiali_configmap.server.observability.logger.log_level == "info"
+      - kiali_configmap.server.observability.logger.time_field_format == "2006-01-02T15:04:05Z07:00"
+      - kiali_configmap.server.observability.logger.sampler_rate == "1"
+      - kiali_configmap.deployment.pod.annotations | length == 1
+      - kiali_configmap.deployment.pod.annotations['proxy.istio.io/config'] == '{ "holdApplicationUntilProxyStarts": true }'
+      - kiali_configmap.deployment.pod.labels | length == 0
+      - kiali_configmap.deployment.pod.resources | length == 2
+      - kiali_configmap.deployment.pod.resources.requests.cpu == "10m"
+      - kiali_configmap.deployment.pod.resources.requests.memory == "64Mi"
+      - kiali_configmap.deployment.pod.resources.limits.memory == "1Gi"
+      - kiali_configmap.deployment.service.annotations | length == 0
       - kiali_configmap.external_services.custom_dashboards.prometheus.custom_headers | length == 0
       - kiali_configmap.external_services.custom_dashboards.prometheus.query_scope | length == 0
       - kiali_configmap.external_services.istio.istio_identity_domain == "svc.cluster.local"

@@ -19,39 +19,39 @@ spec:
   custom_dashboards: null
 
   deployment:
-    additional_service_yaml: null
-    affinity:
-      node: null
-      pod: null
-      pod_anti: null
+    configmap:
+      annotations: null
+    image:
+      name: "{{ kiali.image_name }}"
+      pull_policy: {{ kiali.image_pull_policy }}
+      pull_secrets: null
+      version: "{{ kiali.image_version }}"
+    pod:
+      affinity:
+        node: null
+        pod: null
+        pod_anti: null
+      annotations: null
+      labels: null
+      node_selector: null
+      priority_class_name: null
+      resources: null
+      tolerations: null
+    service:
+      additional_yaml: null
+      annotations: null
+      type: {{ 'LoadBalancer' if is_kind else 'NodePort' }}
+    workload:
+      replicas: null
     cluster_wide_access: {{ kiali.cluster_wide_access|bool }}
-    configmap_annotations: null
     discovery_selectors: null
     extra_labels: null
-    image_name: "{{ kiali.image_name }}"
-    image_pull_policy: {{ kiali.image_pull_policy }}
-    image_pull_secrets: null
-    image_version: "{{ kiali.image_version }}"
     ingress:
       class_name: null
       enabled: true
       override_yaml: null
-    logger:
-      log_format: null
-      log_level: null
-      sampler_rate: null
-      time_field_format: null
     namespace: {{ kiali.install_namespace }}
-    node_selector: null
-    pod_annotations: null
-    pod_labels: null
-    priority_class_name: null
-    replicas: null
-    resources: null
     secret_name: null
-    service_annotations: null
-    service_type: {{ 'LoadBalancer' if is_kind else 'NodePort' }}
-    tolerations: null
     version_label: null
     view_only_mode: null
 
@@ -133,6 +133,11 @@ spec:
     cors_allow_all: null
     gzip_enabled: null
     observability:
+      logger:
+        log_format: null
+        log_level: null
+        sampler_rate: null
+        time_field_format: null
       metrics:
         enabled: null
         port: null

@@ -54,64 +54,11 @@ spec:
   - name: "envoy"
 
   deployment:
-    # default: additional_service_yaml is empty
-    additional_service_yaml:
-      externalName: "kiali.example.com"
-    affinity:
-      # default: node is empty
-      node:
-        requiredDuringSchedulingIgnoredDuringExecution:
-          nodeSelectorTerms:
-          - matchExpressions:
-            - key: kubernetes.io/e2e-az-name
-              operator: In
-              values:
-              - e2e-az1
-              - e2e-az2
-      # default: pod is empty
-      pod:
-        requiredDuringSchedulingIgnoredDuringExecution:
-        - labelSelector:
-            matchExpressions:
-            - key: security
-              operator: In
-              values:
-              - S1
-          topologyKey: topology.kubernetes.io/zone
-      # default: pod_anti is empty
-      pod_anti:
-        preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 100
-          podAffinityTerm:
-            labelSelector:
-              matchExpressions:
-              - key: security
-                operator: In
-                values:
-                - S2
-            topologyKey: topology.kubernetes.io/zone
     cluster_wide_access: true
-    # default: configmap_annotations is empty
-    configmap_annotations:
-      strategy.spinnaker.io/versioned: "false"
-    # default: custom_envs is an empty list
-    custom_envs:
-    - name: "HTTP_PROXY"
-      value: "http://my.proxy.com:1234"
-    - name: "NO_PROXY"
-      value: "hostname.example.com"
-    # default: custom_secrets is an empty list
-    custom_secrets:
-    - name: "a-custom-secret"
-      mount: "/a-custom-secret-path"
-      optional: true
-    - name: "a-csi-secret"
-      mount: "/a-csi-secret-path"
-      csi:
-        driver: secrets-store.csi.k8s.io
-        readOnly: true
-        volumeAttributes:
-          secretProviderClass: kiali-secretprovider
+    # default: configmap is empty
+    configmap:
+      annotations:
+        strategy.spinnaker.io/versioned: "false"
     # default: discovery_selectors is empty
     discovery_selectors:
       default:
@@ -145,40 +92,101 @@ spec:
           - key: domain
             operator: "In"
             values: ["staging"]
-    dns:
-      # default: config is empty
-      config:
-        options:
-        - name: ndots
-          value: "1"
-      # default: policy is empty
-      policy: "ClusterFirst"
     extra_labels: {}
-    # default: host_aliases is an empty list
-    host_aliases:
-    - ip: "192.168.1.100"
-      hostnames:
-      - "foo.local"
-      - "bar.local"
-    hpa:
-      api_version: ""
-      # default: spec is empty
-      spec:
-        maxReplicas: 2
-        minReplicas: 1
-        metrics:
-        - type: Resource
-          resource:
-            name: cpu
-            target:
-              type: Utilization
-              averageUtilization: 50
-    image_digest: ""
-    image_name: ""
-    image_pull_policy: "IfNotPresent"
-    # default: image_pull_secrets is an empty list
-    image_pull_secrets: ["image.pull.secret"]
-    image_version: ""
+    # default: image is empty
+    image:
+      digest: ""
+      name: ""
+      pull_policy: "IfNotPresent"
+      # default: pull_secrets is an empty list
+      pull_secrets: ["image.pull.secret"]
+      version: ""
+    # default: pod is empty
+    pod:
+      affinity:
+        # default: node is empty
+        node:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/e2e-az-name
+                operator: In
+                values:
+                - e2e-az1
+                - e2e-az2
+        # default: pod is empty
+        pod:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: security
+                operator: In
+                values:
+                - S1
+            topologyKey: topology.kubernetes.io/zone
+        # default: pod_anti is empty
+        pod_anti:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: security
+                  operator: In
+                  values:
+                  - S2
+              topologyKey: topology.kubernetes.io/zone
+      # default: custom_envs is an empty list
+      custom_envs:
+      - name: "HTTP_PROXY"
+        value: "http://my.proxy.com:1234"
+      - name: "NO_PROXY"
+        value: "hostname.example.com"
+      # default: custom_secrets is an empty list
+      custom_secrets:
+      - name: "a-custom-secret"
+        mount: "/a-custom-secret-path"
+        optional: true
+      - name: "a-csi-secret"
+        mount: "/a-csi-secret-path"
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: kiali-secretprovider
+      dns:
+        # default: config is empty
+        config:
+          options:
+          - name: ndots
+            value: "1"
+        # default: policy is empty
+        policy: "ClusterFirst"
+      # default: host_aliases is an empty list
+      host_aliases:
+      - ip: "192.168.1.100"
+        hostnames:
+        - "foo.local"
+        - "bar.local"
+    # default: service is empty
+    service:
+      additional_yaml:
+        externalName: "kiali.example.com"
+    # default: workload is empty
+    workload:
+      hpa:
+        api_version: ""
+        # default: spec is empty
+        spec:
+          maxReplicas: 2
+          minReplicas: 1
+          metrics:
+          - type: Resource
+            resource:
+              name: cpu
+              target:
+                type: Utilization
+                averageUtilization: 50
     ingress:
       # default: additional_labels is empty
       additional_labels:
@@ -204,57 +212,48 @@ spec:
                     port:
                       number: 20001
     instance_name: "kiali"
-    logger:
-      log_level: "info"
-      log_format: "text"
-      sampler_rate: "1"
-      time_field_format: "2006-01-02T15:04:05Z07:00"
     namespace: "istio-system"
-    # default: node_selector is empty
-    node_selector:
-      nodeSelector: "nodeSelectorValue"
-    # default: pod_annotations is empty
-    pod_annotations:
-      proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'
-    # default: pod_labels is empty
-    pod_labels:
-      sidecar.istio.io/inject: "true"
-    priority_class_name: ""
-    probes:
-      liveness:
-        initial_delay_seconds: 5
-        period_seconds: 30
-      readiness:
-        initial_delay_seconds: 5
-        period_seconds: 30
-      startup:
-        failure_threshold: 6
-        initial_delay_seconds: 30
-        period_seconds: 10
+    pod:
+      annotations:
+        proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'
+      labels:
+        sidecar.istio.io/inject: "true"
+      node_selector:
+        nodeSelector: "nodeSelectorValue"
+      priority_class_name: ""
+      probes:
+        liveness:
+          initial_delay_seconds: 5
+          period_seconds: 30
+        readiness:
+          initial_delay_seconds: 5
+          period_seconds: 30
+        startup:
+          failure_threshold: 6
+          initial_delay_seconds: 30
+          period_seconds: 10
+      resources:
+        requests:
+          cpu: "10m"
+          memory: "64Mi"
+        limits:
+          memory: "1Gi"
+      security_context: {}
+      tolerations:
+      - key: "example-key"
+        operator: "Exists"
+        effect: "NoSchedule"
+      topology_spread_constraints: []
     remote_cluster_resources_only: false
-    replicas: 1
-    # default: resources is undefined
-    resources:
-      requests:
-        cpu: "10m"
-        memory: "64Mi"
-      limits:
-        memory: "1Gi"
-    secret_name: "kiali"
-    security_context: {}
-    # default: service_annotations is empty
-    service_annotations:
-      svcAnnotation: "svcAnnotationValue"
-    # default: service_type is undefined
-    service_type: "NodePort"
-    # default: tolerations is an empty list
-    tolerations:
-    - key: "example-key"
-      operator: "Exists"
-      effect: "NoSchedule"
-    topology_spread_constraints: []
+    service:
+      annotations:
+        svcAnnotation: "svcAnnotationValue"
+      secret_name: "kiali"
+      type: "NodePort"
     version_label: ""
     view_only_mode: false
+    workload:
+      replicas: 1
 
   # default: extensions is an empty list
   extensions:
@@ -517,9 +516,16 @@ spec:
     # default: node_port is undefined
     node_port: 32475
     observability:
+      logger:
+        log_level: "info"
+        log_format: "text"
+        sampler_rate: "1"
+        time_field_format: "2006-01-02T15:04:05Z07:00"
       metrics:
         enabled: true
         port: 9090
+      profiler:
+        enabled: false
       tracing:
         collector_type: "otel"
         collector_url: "jaeger-collector.istio-system:4318"
@@ -530,8 +536,6 @@ spec:
           skip_verify: false
           tls_enabled: false
     port: 20001
-    profiler:
-      enabled: false
     require_auth: false
     web_fqdn: ""
     web_history_mode: ""

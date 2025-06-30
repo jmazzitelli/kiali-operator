@@ -210,10 +210,10 @@
 
 - name: Only allow ad-hoc kiali image when appropriate
   fail:
-    msg: "The operator is forbidden from accepting a Kiali CR that defines an ad hoc Kiali image [{{ kiali_vars.deployment.image_name }}{{ '@' + kiali_vars.deployment.image_digest if kiali_vars.deployment.image_digest != '' else '' }}:{{ kiali_vars.deployment.image_version }}]. Remove spec.deployment.image_name, spec.deployment.image_version, and spec.deployment.image_digest from the Kiali CR."
+    msg: "The operator is forbidden from accepting a Kiali CR that defines an ad hoc Kiali image [{{ kiali_vars.deployment.image.name }}{{ '@' + kiali_vars.deployment.image.digest if kiali_vars.deployment.image.digest != '' else '' }}:{{ kiali_vars.deployment.image.version }}]. Remove spec.deployment.image.name, spec.deployment.image.version, and spec.deployment.image.digest from the Kiali CR."
   when:
   - kiali_vars.deployment.remote_cluster_resources_only|bool == False
-  - kiali_vars.deployment.image_name != "" or kiali_vars.deployment.image_version != "" or kiali_vars.deployment.image_digest != ""
+  - kiali_vars.deployment.image.name != "" or kiali_vars.deployment.image.version != "" or kiali_vars.deployment.image.digest != ""
   - lookup('env', 'ALLOW_AD_HOC_KIALI_IMAGE') | default('false', True) != "true"
 
 # We do not want to blindly default to istio-system for some namespaces. If the istio_namespace is not
@@ -264,13 +264,13 @@
       {% endif %}
 
       {# Set default HPA api_version #}
-      {% if kv.deployment.hpa.api_version == "" %}
-      {% set kv = kv | combine({'deployment': {'hpa': {'api_version': autoscaling_api_version }}}, recursive=True) %}
+      {% if kv.deployment.workload.hpa.api_version == "" %}
+      {% set kv = kv | combine({'deployment': {'workload': {'hpa': {'api_version': autoscaling_api_version }}}}, recursive=True) %}
       {% endif %}
 
       {# Provide some default resource limits #}
-      {% if kv.deployment.resources is not defined %}
-      {% set kv = kv | combine({'deployment': {'resources': resource_limits_default }}, recursive=True) %}
+      {% if kv.deployment.pod.resources is not defined %}
+      {% set kv = kv | combine({'deployment': {'pod': {'resources': resource_limits_default }}}, recursive=True) %}
       {% endif %}
 
       {# Set default deployment.ingress.enabled based on cluster type (disable on k8s; enable on OpenShift) #}
@@ -304,18 +304,18 @@
       {% endif %}
 
       {# Default the image name to a known supported image. #}
-      {% if kv.deployment.image_name == "" %}
-      {% set kv = kv | combine({'deployment': {'image_name': supported_kiali_images[kv.version].image_name}}, recursive=True) %}
+      {% if kv.deployment.image.name == "" %}
+      {% set kv = kv | combine({'deployment': {'image': {'name': supported_kiali_images[kv.version].image_name}}}, recursive=True) %}
       {% endif %}
 
       {# Default the image version to a known supported image. #}
-      {% if kv.deployment.image_version == "" %}
-      {% set kv = kv | combine({'deployment': {'image_version': ('latest' if operator_version == 'master' else operator_version) if supported_kiali_images[kv.version].image_version == 'operator_version' else supported_kiali_images[kv.version].image_version}}, recursive=True) %}
+      {% if kv.deployment.image.version == "" %}
+      {% set kv = kv | combine({'deployment': {'image': {'version': ('latest' if operator_version == 'master' else operator_version) if supported_kiali_images[kv.version].image_version == 'operator_version' else supported_kiali_images[kv.version].image_version}}}, recursive=True) %}
       {% endif %}
 
       {# If image version is latest then we will want to always pull #}
-      {% if kv.deployment.image_version == "latest" %}
-      {% set kv = kv | combine({'deployment': {'image_pull_policy': 'Always'}}, recursive=True) %}
+      {% if kv.deployment.image.version == "latest" %}
+      {% set kv = kv | combine({'deployment': {'image': {'pull_policy': 'Always'}}}, recursive=True) %}
       {% endif %}
 
       {# Set default auth strategy based on cluster type #}
@@ -389,32 +389,32 @@
   uri:
     url: https://api.github.com/repos/kiali/kiali-operator/releases
   when:
-  - kiali_vars.deployment.image_version == "lastrelease"
+  - kiali_vars.deployment.image.version == "lastrelease"
 - name: Determine image version when last release is to be installed
   shell: echo -n $(curl -s https://api.github.com/repos/kiali/kiali-operator/releases 2> /dev/null | grep "tag_name" | sed -e 's/.*://' -e 's/ *"//' -e 's/",//' | grep -v "snapshot" | sort -t "." -k 1.2g,1 -k 2g,2 -k 3g | tail -n 1)
   register: github_lastrelease
   when:
-  - kiali_vars.deployment.image_version == "lastrelease"
+  - kiali_vars.deployment.image.version == "lastrelease"
 - set_fact:
-    kiali_vars: "{{ kiali_vars | combine({'deployment': {'image_version': github_lastrelease.stdout}}, recursive=True) }}"
+    kiali_vars: "{{ kiali_vars | combine({'deployment': {'image': {'version': github_lastrelease.stdout}}}, recursive=True) }}"
   when:
-  - kiali_vars.deployment.image_version == "lastrelease"
+  - kiali_vars.deployment.image.version == "lastrelease"
 
 - name: Determine image version when it explicitly was configured as the operator_version
   set_fact:
-    kiali_vars: "{{ kiali_vars | combine({'deployment': {'image_version': 'latest' if operator_version == 'master' else operator_version}}, recursive=True) }}"
+    kiali_vars: "{{ kiali_vars | combine({'deployment': {'image': {'version': 'latest' if operator_version == 'master' else operator_version}}}, recursive=True) }}"
   when:
-  - kiali_vars.deployment.image_version == "operator_version"
+  - kiali_vars.deployment.image.version == "operator_version"
 
 - fail:
-    msg: "Could not determine what the image version should be. Set deployment.image_version to a valid value"
+    msg: "Could not determine what the image version should be. Set deployment.image.version to a valid value"
   when:
   - kiali_vars.deployment.remote_cluster_resources_only|bool == False
-  - kiali_vars.deployment.image_version == "" or kiali_vars.deployment.image_version == "unknown"
+  - kiali_vars.deployment.image.version == "" or kiali_vars.deployment.image.version == "unknown"
 
 - name: Determine version_label based on image_version
   set_fact:
-    kiali_vars: "{{ kiali_vars | combine({'deployment': {'version_label': 'master' if kiali_vars.deployment.image_version == 'latest' else kiali_vars.deployment.image_version}}, recursive=True) }}"
+    kiali_vars: "{{ kiali_vars | combine({'deployment': {'version_label': 'master' if kiali_vars.deployment.image.version == 'latest' else kiali_vars.deployment.image.version}}, recursive=True) }}"
   when:
   - kiali_vars.deployment.version_label == ""
 
@@ -427,7 +427,7 @@
 
 # Indicate which Kiali image we are going to use.
 - debug:
-    msg: "IMAGE_NAME={{ kiali_vars.deployment.image_name }}; IMAGE VERSION={{ kiali_vars.deployment.image_version }}; VERSION LABEL={{ kiali_vars.deployment.version_label }}"
+    msg: "IMAGE_NAME={{ kiali_vars.deployment.image.name }}; IMAGE VERSION={{ kiali_vars.deployment.image.version }}; VERSION LABEL={{ kiali_vars.deployment.version_label }}"
 
 - name: Determine what metadata labels to apply to all created resources
   set_fact:
@@ -736,8 +736,8 @@
 - name: Find some current configuration settings, if they exist
   set_fact:
     current_view_only_mode: "{{ current_configmap.data['config.yaml'] | from_yaml | json_query('deployment.view_only_mode') }}"
-    current_image_name: "{{ current_configmap.data['config.yaml'] | from_yaml | json_query('deployment.image_name') }}"
-    current_image_version: "{{ current_configmap.data['config.yaml'] | from_yaml | json_query('deployment.image_version') }}"
+    current_image_name: "{{ current_configmap.data['config.yaml'] | from_yaml | json_query('deployment.image.name') }}"
+    current_image_version: "{{ current_configmap.data['config.yaml'] | from_yaml | json_query('deployment.image.version') }}"
     current_instance_name: "{{ current_configmap.data['config.yaml'] | from_yaml | json_query('deployment.instance_name') }}"
     current_auth_strategy: "{{ current_configmap.data['config.yaml'] | from_yaml | json_query('auth.strategy') }}"
     current_cluster_wide_access: "{{ current_configmap.data['config.yaml'] | from_yaml | json_query('deployment.cluster_wide_access') }}"
@@ -871,7 +871,7 @@
     name: "{{ kiali_vars.deployment.instance_name }}"
   when:
   - current_image_name is defined and current_image_version is defined
-  - (current_image_name != kiali_vars.deployment.image_name) or (current_image_version != kiali_vars.deployment.image_version)
+  - (current_image_name != kiali_vars.deployment.image.name) or (current_image_version != kiali_vars.deployment.image.version)
 
 # Get the deployment's custom annotation we set that tells us when we last updated the Deployment.
 # We need this to ensure the Deployment we update retains this same timestamp unless changes are made

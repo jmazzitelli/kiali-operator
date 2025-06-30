@@ -8,19 +8,24 @@ spec:
   auth:
     strategy: {{ kiali.auth_strategy }}
   deployment:
-    replicas: 1
+    workload:
+      replicas: 1
     ingress:
       enabled: true
-    logger:
-      log_level: debug
+    image:
+      name: "{{ kiali.image_name }}"
+      pull_policy: {{ kiali.image_pull_policy }}
+      version: "{{ kiali.image_version }}"
+    service:
+      # while we are here, make sure the additional service yaml retains camelCase
+      additional_yaml:
+        externalName: my.kiali.example.com
+      type: {{ 'LoadBalancer' if is_kind else 'NodePort' }}
     namespace: {{ kiali.install_namespace }}
     # Note that we start with no affinity or tolerations or resources sections,
     # so the first time through we just pick up the defaults.
-    image_name: "{{ kiali.image_name }}"
-    image_pull_policy: {{ kiali.image_pull_policy }}
-    image_version: "{{ kiali.image_version }}"
     cluster_wide_access: {{ kiali.cluster_wide_access|bool }}
-    # while we are here, make sure the additional service yaml retains camelCase
-    additional_service_yaml:
-      externalName: my.kiali.example.com
-    service_type: {{ 'LoadBalancer' if is_kind else 'NodePort' }}
+  server:
+    observability:
+      logger:
+        log_level: debug

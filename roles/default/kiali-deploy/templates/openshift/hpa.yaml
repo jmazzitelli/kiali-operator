@@ -1,5 +1,5 @@
-{% if kiali_vars.deployment.hpa.spec | length > 0 %}
-apiVersion: {{ kiali_vars.deployment.hpa.api_version }}
+{% if kiali_vars.deployment.workload.hpa.spec | length > 0 %}
+apiVersion: {{ kiali_vars.deployment.workload.hpa.api_version }}
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ kiali_vars.deployment.instance_name }}
@@ -10,5 +10,5 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: {{ kiali_vars.deployment.instance_name }}
-  {{ kiali_vars.deployment.hpa.spec | to_nice_yaml(indent=0) | trim | indent(2) }}
+  {{ kiali_vars.deployment.workload.hpa.spec | to_nice_yaml(indent=0) | trim | indent(2) }}
 {% endif %}

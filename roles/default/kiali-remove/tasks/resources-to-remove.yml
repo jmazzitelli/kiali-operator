@@ -1,5 +1,5 @@
 ---
-apiVersion: {{ kiali_vars_remove.deployment.hpa.api_version }}
+apiVersion: {{ kiali_vars_remove.deployment.workload.hpa.api_version }}
 kind: HorizontalPodAutoscaler
 metadata:
   namespace: "{{ kiali_vars_remove.deployment.namespace }}"

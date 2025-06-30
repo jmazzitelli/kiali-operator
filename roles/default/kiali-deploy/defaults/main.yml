@@ -50,66 +50,66 @@ kiali_defaults:
   custom_dashboards: []
 
   deployment:
-    #additional_service_yaml:
-    affinity:
-      node: {}
-      pod: {}
-      pod_anti: {}
+    configmap:
+      annotations: {}
+    image:
+      digest: ""
+      name: ""
+      pull_policy: "IfNotPresent"
+      pull_secrets: []
+      version: ""
+    pod:
+      affinity:
+        node: {}
+        pod: {}
+        pod_anti: {}
+      annotations:
+        proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'
+      custom_envs: []
+      custom_secrets: []
+      dns:
+        config: {}
+        policy: ""
+      host_aliases: []
+      labels: {}
+      node_selector: {}
+      priority_class_name: ""
+      probes:
+        liveness:
+          initial_delay_seconds: 5
+          period_seconds: 30
+        readiness:
+          initial_delay_seconds: 5
+          period_seconds: 30
+        startup:
+          failure_threshold: 6
+          initial_delay_seconds: 30
+          period_seconds: 10
+      #resources:
+      security_context: {}
+      tolerations: []
+      topology_spread_constraints: []
+    service:
+      #additional_service_yaml:
+      annotations: {}
+      #type: "NodePort"
+    workload:
+      hpa:
+        api_version: ""
+        spec: {}
+      replicas: 1
     cluster_wide_access: true
-    configmap_annotations: {}
-    custom_envs: []
-    custom_secrets: []
     discovery_selectors: {}
-    dns:
-      config: {}
-      policy: ""
     extra_labels: {}
-    host_aliases: []
-    hpa:
-      api_version: ""
-      spec: {}
-    image_digest: ""
-    image_name: ""
-    image_pull_policy: "IfNotPresent"
-    image_pull_secrets: []
-    image_version: ""
     ingress:
       additional_labels: {}
       class_name: "nginx"
       #enabled:
       #override_yaml:
     instance_name: "kiali"
-    logger:
-      log_format: "text"
-      log_level: "info"
-      sampler_rate: "1"
-      time_field_format: "2006-01-02T15:04:05Z07:00"
     namespace: ""
-    node_selector: {}
-    pod_annotations:
-      proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'
-    pod_labels: {}
-    priority_class_name: ""
-    probes:
-      liveness:
-        initial_delay_seconds: 5
-        period_seconds: 30
-      readiness:
-        initial_delay_seconds: 5
-        period_seconds: 30
-      startup:
-        failure_threshold: 6
-        initial_delay_seconds: 30
-        period_seconds: 10
     remote_cluster_resources_only: false
-    replicas: 1
-    #resources:
     secret_name: "kiali"
-    security_context: {}
-    service_annotations: {}
-    #service_type: "NodePort"
-    tolerations: []
-    topology_spread_constraints: []
     version_label: ""
     view_only_mode: false
 
@@ -337,9 +337,16 @@ kiali_defaults:
     gzip_enabled: true
     #node_port:
     observability:
+      logger:
+        log_format: "text"
+        log_level: "info"
+        sampler_rate: "1"
+        time_field_format: "2006-01-02T15:04:05Z07:00"
       metrics:
         enabled: true
         port: 9090
+      profiler:
+        enabled: false
       tracing:
         collector_type: "otel"
         collector_url: "jaeger-collector.istio-system:4318"
@@ -350,8 +357,6 @@ kiali_defaults:
           skip_verify: false
           tls_enabled: false
     port: 20001
-    profiler:
-      enabled: false
     require_auth: false
     web_fqdn: ""
     web_history_mode: ""

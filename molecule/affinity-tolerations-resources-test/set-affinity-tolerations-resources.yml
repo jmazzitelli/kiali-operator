@@ -4,7 +4,8 @@
 - name: Set affinity and tolerations and resources and pod_annotations and service_annotations and pod_labels in current Kiali CR
   vars:
     current_kiali_cr: "{{ kiali_cr_list.resources[0] }}"
+    current_additional_service_yaml: "{{ current_kiali_cr.spec.deployment.service.additional_yaml | default({}) }}"
   set_fact:
-    new_kiali_cr: "{{ current_kiali_cr | combine({'spec': {'deployment': {'affinity': new_affinity, 'tolerations': new_tolerations, 'resources': new_resources, 'pod_annotations': new_pod_annotations, 'service_annotations': new_service_annotations, 'pod_labels': new_pod_labels, 'hpa': new_hpa, 'topology_spread_constraints': new_topology_spread_constraints, 'ingress': { 'additional_labels': new_ingress_labels }}}}, recursive=True) }}"
+    new_kiali_cr: "{{ current_kiali_cr | combine({'spec': {'deployment': {'pod': {'affinity': new_affinity, 'tolerations': new_tolerations, 'resources': new_resources, 'annotations': new_pod_annotations, 'labels': new_pod_labels, 'topology_spread_constraints': new_topology_spread_constraints}, 'service': {'annotations': new_service_annotations, 'additional_yaml': current_additional_service_yaml}, 'workload': {'hpa': new_hpa}, 'ingress': { 'additional_labels': new_ingress_labels }}}}, recursive=True) }}"
 
 - import_tasks: ../common/set_kiali_cr.yml

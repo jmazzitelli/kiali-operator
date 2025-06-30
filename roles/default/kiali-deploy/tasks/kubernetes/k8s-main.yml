@@ -7,13 +7,13 @@
 - name: Remove HPA if disabled on Kubernetes
   k8s:
     state: absent
-    api_version: "{{ kiali_vars.deployment.hpa.api_version }}"
+    api_version: "{{ kiali_vars.deployment.workload.hpa.api_version }}"
     kind: "HorizontalPodAutoscaler"
     namespace: "{{ kiali_vars.deployment.namespace }}"
     name: "{{ kiali_vars.deployment.instance_name }}"
   when:
   - is_k8s == True
-  - kiali_vars.deployment.hpa.spec | length == 0
+  - kiali_vars.deployment.workload.hpa.spec | length == 0
 
 - name: Create Kiali objects on Kubernetes
   include_tasks: process-resource.yml
@@ -26,7 +26,7 @@
     - "templates/kubernetes/rolebinding.yaml"
     - "{{ 'templates/kubernetes/deployment.yaml' if kiali_vars.deployment.remote_cluster_resources_only|bool == False else '' }}"
     - "{{ 'templates/kubernetes/service.yaml' if kiali_vars.deployment.remote_cluster_resources_only|bool == False else '' }}"
-    - "{{ 'templates/kubernetes/hpa.yaml' if ((kiali_vars.deployment.hpa.spec | length > 0) and (kiali_vars.deployment.remote_cluster_resources_only|bool == False)) else '' }}"
+    - "{{ 'templates/kubernetes/hpa.yaml' if ((kiali_vars.deployment.workload.hpa.spec | length > 0) and (kiali_vars.deployment.remote_cluster_resources_only|bool == False)) else '' }}"
     - "{{ 'templates/kubernetes/ingress.yaml' if ((kiali_vars.deployment.ingress.enabled|bool == True) and (kiali_vars.deployment.remote_cluster_resources_only|bool == False)) else '' }}"
   when:
   - is_k8s == True

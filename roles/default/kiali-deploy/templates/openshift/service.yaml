@@ -6,12 +6,12 @@ metadata:
   labels: {{ kiali_resource_metadata_labels }}
   annotations:
     service.beta.openshift.io/serving-cert-secret-name: {{ kiali_vars.deployment.instance_name }}-cert-secret
-{% if kiali_vars.deployment.service_annotations|length > 0 %}
-    {{ kiali_vars.deployment.service_annotations | to_nice_yaml(indent=0) | trim | indent(4) }}
+{% if kiali_vars.deployment.service.annotations|length > 0 %}
+    {{ kiali_vars.deployment.service.annotations | to_nice_yaml(indent=0) | trim | indent(4) }}
 {% endif %}
 spec:
-{% if kiali_vars.deployment.service_type is defined %}
-  type: {{ kiali_vars.deployment.service_type }}
+{% if kiali_vars.deployment.service.type is defined %}
+  type: {{ kiali_vars.deployment.service.type }}
 {% endif %}
   ports:
   - name: {{ 'http' if kiali_vars.identity.cert_file == "" else 'tcp' }}
@@ -20,7 +20,7 @@ spec:
     appProtocol: {{ 'http' if kiali_vars.identity.cert_file == "" else 'https' }}
 {% endif %}
     port: {{ kiali_vars.server.port }}
-{% if kiali_vars.deployment.service_type is defined and kiali_vars.deployment.service_type == "NodePort" and kiali_vars.server.node_port is defined %}
+{% if kiali_vars.deployment.service.type is defined and kiali_vars.deployment.service.type == "NodePort" and kiali_vars.server.node_port is defined %}
     nodePort: {{ kiali_vars.server.node_port }}
 {% endif %}
 {% if kiali_vars.server.observability.metrics.enabled|bool == True %}
@@ -38,4 +38,4 @@ spec:
 {% endif %}
     app.kubernetes.io/name: kiali
     app.kubernetes.io/instance: {{ kiali_vars.deployment.instance_name }}
-  {% if kiali_vars.deployment.additional_service_yaml is defined %}{{ kiali_vars.deployment.additional_service_yaml | to_nice_yaml(indent=0) | trim | indent(2) }}{% endif %}
+  {% if kiali_vars.deployment.service.additional_yaml is defined %}{{ kiali_vars.deployment.service.additional_yaml | to_nice_yaml(indent=0) | trim | indent(2) }}{% endif %}

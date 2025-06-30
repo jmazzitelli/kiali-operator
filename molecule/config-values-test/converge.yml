@@ -34,15 +34,15 @@
     when:
     - is_openshift == True
 
-  - name: Test the default deployment.resources is what we expect
+  - name: Test the default deployment.pod.resources is what we expect
     vars:
       kiali_pod_spec: "{{ kiali_pod.resources[0].spec }}"
     assert:
       that:
-      - kiali_configmap.deployment.resources | length == 2
-      - kiali_configmap.deployment.resources.requests.cpu == "10m"
-      - kiali_configmap.deployment.resources.requests.memory == "64Mi"
-      - kiali_configmap.deployment.resources.limits.memory == "1Gi"
+      - kiali_configmap.deployment.pod.resources | length == 2
+      - kiali_configmap.deployment.pod.resources.requests.cpu == "10m"
+      - kiali_configmap.deployment.pod.resources.requests.memory == "64Mi"
+      - kiali_configmap.deployment.pod.resources.limits.memory == "1Gi"
       - kiali_pod_spec.containers[0].resources | length == 2
       - kiali_pod_spec.containers[0].resources.requests.cpu == "10m"
       - kiali_pod_spec.containers[0].resources.requests.memory == "64Mi"
@@ -55,7 +55,7 @@
       that:
       - http_port.nodePort == 32444
     when:
-    - kiali_configmap.deployment.service_type == "NodePort"
+    - kiali_configmap.deployment.service.type == "NodePort"
   - name: If we are NOT configured with NodePort as service type, and NOT on KinD, make sure there is no nodePort in the service
     vars:
       http_port: "{{ kiali_service.resources[0].spec.ports | selectattr('name', 'match', '^(http|tcp)$') | first }}"
@@ -63,7 +63,7 @@
       that:
       - http_port.nodePort is not defined
     when:
-    - kiali_configmap.deployment.service_type != "NodePort"
+    - kiali_configmap.deployment.service.type != "NodePort"
     - is_kind == False
 
   # default auth strategy for both openshift or non-openshift (openshift or token) will always result in the kiali-viewer role
@@ -82,14 +82,14 @@
       that:
       - kiali_role_raw.resources[0].rules | to_yaml is search('pods/log')
 
-  - name: Test the default deployment.dns is what we expect
+  - name: Test the default deployment.pod.dns is what we expect
     vars:
       kiali_pod_spec: "{{ kiali_pod.resources[0].spec }}"
     assert:
       that:
-      - kiali_configmap.deployment.dns | length == 2
-      - kiali_configmap.deployment.dns.policy | length == 0
-      - kiali_configmap.deployment.dns.config | length == 0
+      - kiali_configmap.deployment.pod.dns | length == 2
+      - kiali_configmap.deployment.pod.dns.policy | length == 0
+      - kiali_configmap.deployment.pod.dns.config | length == 0
       - kiali_pod_spec.dnsPolicy == "ClusterFirst"
       - kiali_pod_spec.dnsConfig is not defined
 
@@ -169,7 +169,7 @@
         - "foo2.local"
         - "bar2.local"
     set_fact:
-      current_kiali_cr: "{{ current_kiali_cr | combine({'spec': {'deployment': {'host_aliases': custom_host_aliases}}}, recursive=True) }}"
+      current_kiali_cr: "{{ current_kiali_cr | combine({'spec': {'deployment': {'pod': {'host_aliases': custom_host_aliases}}}}, recursive=True) }}"
 
   - name: Add custom_secrets
     vars:
@@ -181,7 +181,7 @@
         mount: /extra-secret-2
         optional: true
     set_fact:
-      current_kiali_cr: "{{ current_kiali_cr | combine({'spec': {'deployment': {'custom_secrets': custom_secrets}}}, recursive=True) }}"
+      current_kiali_cr: "{{ current_kiali_cr | combine({'spec': {'deployment': {'pod': {'custom_secrets': custom_secrets}}}}, recursive=True) }}"
 
   - name: Add custom_envs
     vars:
@@ -193,11 +193,11 @@
       - name: CUSTOM_ENV_VAR_THREE
         value: "a: b// :123 *,X,Y,Z"
     set_fact:
-      current_kiali_cr: "{{ current_kiali_cr | combine({'spec': {'deployment': {'custom_envs': custom_envs}}}, recursive=True) }}"
+      current_kiali_cr: "{{ current_kiali_cr | combine({'spec': {'deployment': {'pod': {'custom_envs': custom_envs}}}}, recursive=True) }}"
 
-  - name: Set deployment.resources to empty map which means we want to not define the pod resources at all
+  - name: Set deployment.pod.resources to empty map which means we want to not define the pod resources at all
     set_fact:
-      current_kiali_cr: "{{ current_kiali_cr | combine({'spec': {'deployment': {'resources': {}}}}, recursive=True) }}"
+      current_kiali_cr: "{{ current_kiali_cr | combine({'spec': {'deployment': {'pod': {'resources': {}}}}}, recursive=True) }}"
 
   - name: Set a signing key of 16 characters length
     set_fact:
@@ -205,7 +205,7 @@
 
   - name: Add configmap annotation
     set_fact:
-      current_kiali_cr: "{{ current_kiali_cr | combine({'spec': {'deployment': {'configmap_annotations': {'aaa': 'bbb', 'camelCaseName': 'camelCaseValue'}}}}, recursive=True) }}"
+      current_kiali_cr: "{{ current_kiali_cr | combine({'spec': {'deployment': {'configmap': {'annotations': {'aaa': 'bbb', 'camelCaseName': 'camelCaseValue'}}}}}, recursive=True) }}"
 
   - name: Disable logs-tab feature
     set_fact:
@@ -222,7 +222,7 @@
           drop:
           - ALL
     set_fact:
-      current_kiali_cr: "{{ current_kiali_cr | combine({'spec': {'deployment': {'security_context': security_context}}}, recursive=True) }}"
+      current_kiali_cr: "{{ current_kiali_cr | combine({'spec': {'deployment': {'pod': {'security_context': security_context}}}}, recursive=True) }}"
 
   - name: Add timeouts to the OpenShift OAuthClient
     set_fact:
@@ -237,7 +237,7 @@
           - name: "ndots"
             value: "1"
     set_fact:
-      current_kiali_cr: "{{ current_kiali_cr | combine({'spec': {'deployment': {'dns': dns_settings}}}, recursive=True) }}"
+      current_kiali_cr: "{{ current_kiali_cr | combine({'spec': {'deployment': {'pod': {'dns': dns_settings}}}}, recursive=True) }}"
 
   - name: Add an extension
     vars:
@@ -261,7 +261,7 @@
           initial_delay_seconds: 15
           period_seconds: 16
     set_fact:
-      current_kiali_cr: "{{ current_kiali_cr | combine({'spec': {'deployment': {'probes': probes }}}, recursive=True) }}"
+      current_kiali_cr: "{{ current_kiali_cr | combine({'spec': {'deployment': {'pod': {'probes': probes }}}}, recursive=True) }}"
 
   - name: Add extra_labels
     vars:
@@ -356,12 +356,12 @@
       - kiali_pod.resources[0].spec | json_query(es1_mountPath_query) | join == '/extra-secret-1'
       - kiali_pod.resources[0].spec | json_query(es2_mountPath_query) | join == '/extra-secret-2'
 
-  - name: Test the default deployment.resources is now empty
+  - name: Test the default deployment.pod.resources is now empty
     vars:
       kiali_pod_spec: "{{ kiali_pod.resources[0].spec }}"
     assert:
       that:
-      - kiali_configmap.deployment.resources | length == 0
+      - kiali_configmap.deployment.pod.resources | length == 0
       - kiali_pod_spec.containers[0].resources | length == 0
 
   - name: Test the signing key is set
@@ -423,15 +423,15 @@
     when:
     - is_openshift == True
 
-  - name: Test the deployment.dns settings
+  - name: Test the deployment.pod.dns settings
     vars:
       kiali_pod_spec: "{{ kiali_pod.resources[0].spec }}"
     assert:
       that:
-      - kiali_configmap.deployment.dns | length == 2
-      - kiali_configmap.deployment.dns.policy == "Default"
-      - kiali_configmap.deployment.dns.config.options[0].name == "ndots"
-      - kiali_configmap.deployment.dns.config.options[0].value == "1"
+      - kiali_configmap.deployment.pod.dns | length == 2
+      - kiali_configmap.deployment.pod.dns.policy == "Default"
+      - kiali_configmap.deployment.pod.dns.config.options[0].name == "ndots"
+      - kiali_configmap.deployment.pod.dns.config.options[0].value == "1"
       - kiali_pod_spec.dnsPolicy == "Default"
       - kiali_pod_spec.dnsConfig.options[0].name == "ndots"
       - kiali_pod_spec.dnsConfig.options[0].value == "1"

@@ -1,0 +1,151 @@
+apiVersion: kiali.io/v1alpha1
+kind: Kiali
+metadata:
+  name: kiali
+  namespace: istio-system
+spec:
+  version: "v1.89"
+  istio_namespace: "istio-system"
+
+  # Auth configuration
+  auth:
+    strategy: "openshift"
+
+  # Old flat deployment structure (before migration)
+  deployment:
+    # Image settings (to be moved to deployment.image.*)
+    image_name: "quay.io/kiali/kiali"
+    image_version: "v1.89.0"
+    image_digest: ""
+    image_pull_policy: "IfNotPresent"
+    image_pull_secrets: []
+
+    # Pod settings (to be moved to deployment.pod.*)
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: kubernetes.io/arch
+              operator: In
+              values:
+              - amd64
+    tolerations:
+    - key: "node-role.kubernetes.io/master"
+      operator: "Exists"
+      effect: "NoSchedule"
+    resources:
+      requests:
+        cpu: "10m"
+        memory: "64Mi"
+      limits:
+        memory: "1Gi"
+    pod_annotations:
+      sidecar.istio.io/inject: "false"
+      prometheus.io/scrape: "true"
+    pod_labels:
+      app: "kiali"
+      version: "v1.89"
+    node_selector:
+      kubernetes.io/os: linux
+    security_context:
+      allowPrivilegeEscalation: false
+      privileged: false
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      capabilities:
+        drop:
+        - ALL
+    custom_secrets:
+    - name: my-secret
+      mount: /etc/my-secret
+      optional: true
+    topology_spread_constraints:
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+      labelSelector:
+        matchLabels:
+          app: kiali
+    dns:
+      policy: "ClusterFirst"
+      config:
+        options:
+        - name: ndots
+          value: "2"
+    host_aliases:
+    - ip: "127.0.0.1"
+      hostnames:
+      - "foo.local"
+      - "bar.local"
+    custom_envs:
+    - name: MY_CUSTOM_ENV
+      value: "custom-value"
+
+    # Service settings (to be moved to deployment.service.*)
+    service_type: "ClusterIP"
+    service_annotations:
+      service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    additional_service_yaml:
+      spec:
+        externalName: "my.kiali.example.com"
+
+    # Workload settings (to be moved to deployment.workload.*)
+    replicas: 2
+    hpa:
+      api_version: "autoscaling/v2"
+      spec:
+        maxReplicas: 5
+        minReplicas: 2
+        metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 50
+
+    # ConfigMap settings (to be moved to deployment.configmap.*)
+    configmap_annotations:
+      example.com/annotation: "value"
+
+    # Logger settings (to be moved to server.observability.logger)
+    logger:
+      log_format: "text"
+      log_level: "info"
+      time_field_format: "2006-01-02T15:04:05Z07:00"
+      sampler_rate: "1"
+
+    # Other deployment settings that stay at deployment level
+    namespace: "istio-system"
+    instance_name: "kiali"
+    cluster_wide_access: false
+    view_only_mode: false
+    extra_labels:
+      environment: "production"
+
+  # Server configuration
+  server:
+    port: 20001
+    address: ""
+    gzip_enabled: true
+    cors_allow_all: false
+
+    # Profiler settings (to be moved to server.observability.profiler)
+    profiler:
+      enabled: false
+
+    # Metrics settings (to be moved to server.observability.metrics)
+    metrics_enabled: true
+    metrics_port: 9090
+
+  # External services configuration
+  external_services:
+    prometheus:
+      url: "http://prometheus:9090"
+    grafana:
+      enabled: true
+      url: "http://grafana:3000"
+    tracing:
+      enabled: true
+      in_cluster_url: "http://jaeger-query:16686"

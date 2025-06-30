@@ -19,16 +19,19 @@ spec:
 
   deployment:
     cluster_wide_access: $CLUSTER_WIDE_ACCESS
-    image_name: $KIALI_IMAGE_NAME
-    image_pull_policy: $KIALI_IMAGE_PULL_POLICY
-    image_version: $KIALI_IMAGE_VERSION
+    image:
+      name: $KIALI_IMAGE_NAME
+      pull_policy: $KIALI_IMAGE_PULL_POLICY
+      version: $KIALI_IMAGE_VERSION
     ingress:
       enabled: true
     namespace: $NAMESPACE
-    service_type: $SERVICE_TYPE
-    logger:
-      log_level: debug
+    service:
+      type: $SERVICE_TYPE
 
   server:
-    profiler:
-      enabled: true
+    observability:
+      logger:
+        log_level: debug
+      profiler:
+        enabled: true

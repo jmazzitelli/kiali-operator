@@ -53,9 +53,9 @@
 - name: Set default HPA api_version
   ignore_errors: yes
   set_fact:
-    kiali_vars_remove: "{{ kiali_vars_remove | combine({'deployment': {'hpa': {'api_version': autoscaling_api_version }}}, recursive=True) }}"
+    kiali_vars_remove: "{{ kiali_vars_remove | combine({'deployment': {'workload': {'hpa': {'api_version': autoscaling_api_version }}}}, recursive=True) }}"
   when:
-  - kiali_vars_remove.deployment.hpa.api_version == ""
+  - kiali_vars_remove.deployment.workload.hpa.api_version == ""
 
 # There is an edge case where a user installed Kiali with one instance name, then changed the instance name in the CR.
 # This is not allowed. When this happens, the operator will abort with an error message telling the user to uninstall Kiali.

@@ -1,0 +1,68 @@
+apiVersion: kiali.io/v1alpha1
+kind: Kiali
+metadata:
+  name: kiali
+  namespace: default
+spec:
+  version: "v1.89"
+  istio_namespace: "istio-system"
+
+  # Auth configuration
+  auth:
+    strategy: "token"
+
+  # Old flat deployment structure (before migration)
+  deployment:
+    # Image settings (to be moved to deployment.image.*)
+    image_name: "quay.io/kiali/kiali"
+    image_version: "v1.89.0"
+    image_pull_policy: "IfNotPresent"
+
+    # Pod settings (to be moved to deployment.pod.*)
+    resources:
+      requests:
+        cpu: "10m"
+        memory: "64Mi"
+      limits:
+        memory: "1Gi"
+    pod_annotations:
+      sidecar.istio.io/inject: "false"
+    pod_labels:
+      app: "kiali"
+      version: "v1.89"
+
+    # Service settings (to be moved to deployment.service.*)
+    service_type: "ClusterIP"
+    service_annotations:
+      service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+
+    # Workload settings (to be moved to deployment.workload.*)
+    replicas: 2
+
+    # ConfigMap settings (to be moved to deployment.configmap.*)
+    configmap_annotations:
+      example.com/annotation: "value"
+
+    # Logger settings (to be moved to server.observability.logger)
+    logger:
+      log_format: "text"
+      log_level: "info"
+
+    # Other deployment settings that stay at deployment level
+    namespace: "default"
+    instance_name: "kiali"
+    cluster_wide_access: false
+    view_only_mode: false
+
+  # Server configuration
+  server:
+    port: 20001
+
+    # Profiler settings (to be moved to server.observability.profiler)
+    profiler:
+      enabled: false
+
+  # External services configuration
+  external_services:
+    prometheus:
+      url: "http://prometheus:9090"

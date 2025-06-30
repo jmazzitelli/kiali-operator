@@ -6,14 +6,14 @@
 - name: Assert Kiali Configmap has the correct Image Version if we know what the version should be
   assert:
     that:
-    - kiali_configmap.deployment.image_version ==  kiali.image_version
+    - kiali_configmap.deployment.image.version ==  kiali.image_version
   when:
   - kiali.image_version != ""
 
 - name: Assert Kiali Configmap has the correct Image Pull Policy
   assert:
     that:
-    - kiali_configmap.deployment.image_pull_policy ==  kiali.image_pull_policy
+    - kiali_configmap.deployment.image.pull_policy ==  kiali.image_pull_policy
 
 - name: Assert Kiali Configmap has the correct Istio Namespace
   assert:

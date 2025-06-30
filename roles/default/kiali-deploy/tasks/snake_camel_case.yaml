@@ -5,16 +5,16 @@
 - name: Replace snake_case with camelCase in all appropriate fields
   set_fact:
     kiali_vars: |
-      {# deployment.affinity.node #}
-      {% if kiali_vars.deployment.affinity is defined and kiali_vars.deployment.affinity.node is defined and kiali_vars.deployment.affinity.node | length > 0 %}
-      {%   set _=kiali_vars['deployment']['affinity'].pop('node') %}
-      {%   set kiali_vars=kiali_vars | combine({'deployment': {'affinity': {'node': current_cr.spec.deployment.affinity.node }}}, recursive=True) %}
+      {# deployment.pod.affinity.node #}
+      {% if kiali_vars.deployment.pod is defined and kiali_vars.deployment.pod.affinity is defined and kiali_vars.deployment.pod.affinity.node is defined and kiali_vars.deployment.pod.affinity.node | length > 0 %}
+      {%   set _=kiali_vars['deployment']['pod']['affinity'].pop('node') %}
+      {%   set kiali_vars=kiali_vars | combine({'deployment': {'pod': {'affinity': {'node': current_cr.spec.deployment.pod.affinity.node }}}}, recursive=True) %}
       {% endif %}
       {# #}
-      {# deployment.affinity.pod #}
-      {% if kiali_vars.deployment.affinity is defined and kiali_vars.deployment.affinity.pod is defined and kiali_vars.deployment.affinity.pod | length > 0 %}
-      {%   set _=kiali_vars['deployment']['affinity'].pop('pod') %}
-      {%   set kiali_vars=kiali_vars | combine({'deployment': {'affinity': {'pod': current_cr.spec.deployment.affinity.pod }}}, recursive=True) %}
+      {# deployment.pod.affinity.pod #}
+      {% if kiali_vars.deployment.pod is defined and kiali_vars.deployment.pod.affinity is defined and kiali_vars.deployment.pod.affinity.pod is defined and kiali_vars.deployment.pod.affinity.pod | length > 0 %}
+      {%   set _=kiali_vars['deployment']['pod']['affinity'].pop('pod') %}
+      {%   set kiali_vars=kiali_vars | combine({'deployment': {'pod': {'affinity': {'pod': current_cr.spec.deployment.pod.affinity.pod }}}}, recursive=True) %}
       {% endif %}
       {# #}
       {# custom_dashboards #}
@@ -23,28 +23,28 @@
       {%   set kiali_vars=kiali_vars | combine({'custom_dashboards': current_cr.spec.custom_dashboards }, recursive=True) %}
       {% endif %}
       {# #}
-      {# deployment.affinity.pod_anti #}
-      {% if kiali_vars.deployment.affinity is defined and kiali_vars.deployment.affinity.pod_anti is defined and kiali_vars.deployment.affinity.pod_anti | length > 0 %}
-      {%   set _=kiali_vars['deployment']['affinity'].pop('pod_anti') %}
-      {%   set kiali_vars=kiali_vars | combine({'deployment': {'affinity': {'pod_anti': current_cr.spec.deployment.affinity.pod_anti }}}, recursive=True) %}
+      {# deployment.pod.affinity.pod_anti #}
+      {% if kiali_vars.deployment.pod is defined and kiali_vars.deployment.pod.affinity is defined and kiali_vars.deployment.pod.affinity.pod_anti is defined and kiali_vars.deployment.pod.affinity.pod_anti | length > 0 %}
+      {%   set _=kiali_vars['deployment']['pod']['affinity'].pop('pod_anti') %}
+      {%   set kiali_vars=kiali_vars | combine({'deployment': {'pod': {'affinity': {'pod_anti': current_cr.spec.deployment.pod.affinity.pod_anti }}}}, recursive=True) %}
       {% endif %}
       {# #}
-      {# deployment.tolerations #}
-      {% if kiali_vars.deployment.tolerations is defined and kiali_vars.deployment.tolerations | length > 0 %}
-      {%   set _=kiali_vars['deployment'].pop('tolerations') %}
-      {%   set kiali_vars=kiali_vars | combine({'deployment': {'tolerations': current_cr.spec.deployment.tolerations }}, recursive=True) %}
+      {# deployment.pod.tolerations #}
+      {% if kiali_vars.deployment.pod is defined and kiali_vars.deployment.pod.tolerations is defined and kiali_vars.deployment.pod.tolerations | length > 0 %}
+      {%   set _=kiali_vars['deployment']['pod'].pop('tolerations') %}
+      {%   set kiali_vars=kiali_vars | combine({'deployment': {'pod': {'tolerations': current_cr.spec.deployment.pod.tolerations }}}, recursive=True) %}
       {% endif %}
       {# #}
-      {# deployment.additional_service_yaml #}
-      {% if kiali_vars.deployment.additional_service_yaml is defined and kiali_vars.deployment.additional_service_yaml | length > 0 %}
-      {%   set _=kiali_vars['deployment'].pop('additional_service_yaml') %}
-      {%   set kiali_vars=kiali_vars | combine({'deployment': {'additional_service_yaml': current_cr.spec.deployment.additional_service_yaml }}, recursive=True) %}
+      {# deployment.service.additional_yaml #}
+      {% if kiali_vars.deployment.service is defined and kiali_vars.deployment.service.additional_yaml is defined and kiali_vars.deployment.service.additional_yaml | length > 0 %}
+      {%   set _=kiali_vars['deployment']['service'].pop('additional_yaml') %}
+      {%   set kiali_vars=kiali_vars | combine({'deployment': {'service': {'additional_yaml': current_cr.spec.deployment.service.additional_yaml }}}, recursive=True) %}
       {% endif %}
       {# #}
-      {# deployment.resources #}
-      {% if kiali_vars.deployment.resources is defined and kiali_vars.deployment.resources | length > 0 %}
-      {%   set _=kiali_vars['deployment'].pop('resources') %}
-      {%   set kiali_vars=kiali_vars | combine({'deployment': {'resources': current_cr.spec.deployment.resources }}, recursive=True) %}
+      {# deployment.pod.resources #}
+      {% if kiali_vars.deployment.pod is defined and kiali_vars.deployment.pod.resources is defined and kiali_vars.deployment.pod.resources | length > 0 %}
+      {%   set _=kiali_vars['deployment']['pod'].pop('resources') %}
+      {%   set kiali_vars=kiali_vars | combine({'deployment': {'pod': {'resources': current_cr.spec.deployment.pod.resources }}}, recursive=True) %}
       {% endif %}
       {# #}
       {# deployment.ingress.override_yaml #}
@@ -59,34 +59,34 @@
       {%   set kiali_vars=kiali_vars | combine({'deployment': {'ingress': {'additional_labels': current_cr.spec.deployment.ingress.additional_labels }}}, recursive=True) %}
       {% endif %}
       {# #}
-      {# deployment.pod_annotations #}
-      {% if kiali_vars.deployment.pod_annotations is defined and kiali_vars.deployment.pod_annotations | length > 0 and current_cr.spec.deployment.pod_annotations is defined and current_cr.spec.deployment.pod_annotations is not none %}
-      {%   set _=kiali_vars['deployment'].pop('pod_annotations') %}
-      {%   set kiali_vars=kiali_vars | combine({'deployment': {'pod_annotations': current_cr.spec.deployment.pod_annotations }}, recursive=True) %}
+      {# deployment.pod.annotations #}
+      {% if kiali_vars.deployment.pod is defined and kiali_vars.deployment.pod.annotations is defined and kiali_vars.deployment.pod.annotations | length > 0 and current_cr.spec.deployment.pod.annotations is defined and current_cr.spec.deployment.pod.annotations is not none %}
+      {%   set _=kiali_vars['deployment']['pod'].pop('annotations') %}
+      {%   set kiali_vars=kiali_vars | combine({'deployment': {'pod': {'annotations': current_cr.spec.deployment.pod.annotations }}}, recursive=True) %}
       {% endif %}
       {# #}
-      {# deployment.pod_labels #}
-      {% if kiali_vars.deployment.pod_labels is defined and kiali_vars.deployment.pod_labels | length > 0 %}
-      {%   set _=kiali_vars['deployment'].pop('pod_labels') %}
-      {%   set kiali_vars=kiali_vars | combine({'deployment': {'pod_labels': current_cr.spec.deployment.pod_labels }}, recursive=True) %}
+      {# deployment.pod.labels #}
+      {% if kiali_vars.deployment.pod is defined and kiali_vars.deployment.pod.labels is defined and kiali_vars.deployment.pod.labels | length > 0 %}
+      {%   set _=kiali_vars['deployment']['pod'].pop('labels') %}
+      {%   set kiali_vars=kiali_vars | combine({'deployment': {'pod': {'labels': current_cr.spec.deployment.pod.labels }}}, recursive=True) %}
       {% endif %}
       {# #}
-      {# deployment.service_annotations #}
-      {% if kiali_vars.deployment.service_annotations is defined and kiali_vars.deployment.service_annotations | length > 0 %}
-      {%   set _=kiali_vars['deployment'].pop('service_annotations') %}
-      {%   set kiali_vars=kiali_vars | combine({'deployment': {'service_annotations': current_cr.spec.deployment.service_annotations }}, recursive=True) %}
+      {# deployment.service.annotations #}
+      {% if kiali_vars.deployment.service is defined and kiali_vars.deployment.service.annotations is defined and kiali_vars.deployment.service.annotations | length > 0 %}
+      {%   set _=kiali_vars['deployment']['service'].pop('annotations') %}
+      {%   set kiali_vars=kiali_vars | combine({'deployment': {'service': {'annotations': current_cr.spec.deployment.service.annotations }}}, recursive=True) %}
       {% endif %}
       {# #}
-      {# deployment.hpa.spec #}
-      {% if kiali_vars.deployment.hpa is defined and kiali_vars.deployment.hpa.spec is defined and kiali_vars.deployment.hpa.spec | length > 0 %}
-      {%   set _=kiali_vars['deployment']['hpa'].pop('spec') %}
-      {%   set kiali_vars=kiali_vars | combine({'deployment': {'hpa': {'spec': current_cr.spec.deployment.hpa.spec }}}, recursive=True) %}
+      {# deployment.workload.hpa.spec #}
+      {% if kiali_vars.deployment.workload is defined and kiali_vars.deployment.workload.hpa is defined and kiali_vars.deployment.workload.hpa.spec is defined and kiali_vars.deployment.workload.hpa.spec | length > 0 %}
+      {%   set _=kiali_vars['deployment']['workload']['hpa'].pop('spec') %}
+      {%   set kiali_vars=kiali_vars | combine({'deployment': {'workload': {'hpa': {'spec': current_cr.spec.deployment.workload.hpa.spec }}}}, recursive=True) %}
       {% endif %}
       {# #}
-      {# deployment.node_selector #}
-      {% if kiali_vars.deployment.node_selector is defined and kiali_vars.deployment.node_selector | length > 0 %}
-      {%   set _=kiali_vars['deployment'].pop('node_selector') %}
-      {%   set kiali_vars=kiali_vars | combine({'deployment': {'node_selector': current_cr.spec.deployment.node_selector }}, recursive=True) %}
+      {# deployment.pod.node_selector #}
+      {% if kiali_vars.deployment.pod is defined and kiali_vars.deployment.pod.node_selector is defined and kiali_vars.deployment.pod.node_selector | length > 0 %}
+      {%   set _=kiali_vars['deployment']['pod'].pop('node_selector') %}
+      {%   set kiali_vars=kiali_vars | combine({'deployment': {'pod': {'node_selector': current_cr.spec.deployment.pod.node_selector }}}, recursive=True) %}
       {% endif %}
       {# #}
       {# external_services.custom_dashboards.prometheus.custom_headers #}
@@ -113,10 +113,10 @@
       {%   set kiali_vars=kiali_vars | combine({'external_services': {'prometheus': {'query_scope': current_cr.spec.external_services.prometheus.query_scope }}}, recursive=True) %}
       {% endif %}
       {# #}
-      {# deployment.configmap_annotations #}
-      {% if kiali_vars.deployment.configmap_annotations is defined and kiali_vars.deployment.configmap_annotations | length > 0 %}
-      {%   set _=kiali_vars['deployment'].pop('configmap_annotations') %}
-      {%   set kiali_vars=kiali_vars | combine({'deployment': {'configmap_annotations': current_cr.spec.deployment.configmap_annotations }}, recursive=True) %}
+      {# deployment.configmap.annotations #}
+      {% if kiali_vars.deployment.configmap is defined and kiali_vars.deployment.configmap.annotations is defined and kiali_vars.deployment.configmap.annotations | length > 0 %}
+      {%   set _=kiali_vars['deployment']['configmap'].pop('annotations') %}
+      {%   set kiali_vars=kiali_vars | combine({'deployment': {'configmap': {'annotations': current_cr.spec.deployment.configmap.annotations }}}, recursive=True) %}
       {% endif %}
       {# #}
       {# external_services.tracing.query_scope #}
@@ -125,16 +125,16 @@
       {%   set kiali_vars=kiali_vars | combine({'external_services': {'tracing': {'query_scope': current_cr.spec.external_services.tracing.query_scope }}}, recursive=True) %}
       {% endif %}
       {# #}
-      {# deployment.security_context #}
-      {% if kiali_vars.deployment.security_context is defined and kiali_vars.deployment.security_context | length > 0 %}
-      {%   set _=kiali_vars['deployment'].pop('security_context') %}
-      {%   set kiali_vars=kiali_vars | combine({'deployment': {'security_context': current_cr.spec.deployment.security_context}}, recursive=True) %}
+      {# deployment.pod.security_context #}
+      {% if kiali_vars.deployment.pod is defined and kiali_vars.deployment.pod.security_context is defined and kiali_vars.deployment.pod.security_context | length > 0 %}
+      {%   set _=kiali_vars['deployment']['pod'].pop('security_context') %}
+      {%   set kiali_vars=kiali_vars | combine({'deployment': {'pod': {'security_context': current_cr.spec.deployment.pod.security_context}}}, recursive=True) %}
       {% endif %}
       {# #}
-      {# deployment.custom_secrets[].csi #}
-      {% if kiali_vars.deployment.custom_secrets is defined and kiali_vars.deployment.custom_secrets | length > 0 %}
-      {%   set _=kiali_vars['deployment'].pop('custom_secrets') %}
-      {%   set kiali_vars=kiali_vars | combine({'deployment': {'custom_secrets': current_cr.spec.deployment.custom_secrets}}, recursive=True) %}
+      {# deployment.pod.custom_secrets[].csi #}
+      {% if kiali_vars.deployment.pod is defined and kiali_vars.deployment.pod.custom_secrets is defined and kiali_vars.deployment.pod.custom_secrets | length > 0 %}
+      {%   set _=kiali_vars['deployment']['pod'].pop('custom_secrets') %}
+      {%   set kiali_vars=kiali_vars | combine({'deployment': {'pod': {'custom_secrets': current_cr.spec.deployment.pod.custom_secrets}}}, recursive=True) %}
       {% endif %}
       {# #}
       {# external_services.tracing.custom_headers #}
@@ -149,10 +149,10 @@
       {%   set kiali_vars=kiali_vars | combine({'deployment': {'discovery_selectors': current_cr.spec.deployment.discovery_selectors}}, recursive=True) %}
       {% endif %}
       {# #}
-      {# deployment.topology_spread_constraints #}
-      {% if kiali_vars.deployment.topology_spread_constraints is defined and kiali_vars.deployment.topology_spread_constraints | length > 0 %}
-      {%   set _=kiali_vars['deployment'].pop('topology_spread_constraints') %}
-      {%   set kiali_vars=kiali_vars | combine({'deployment': {'topology_spread_constraints': current_cr.spec.deployment.topology_spread_constraints }}, recursive=True) %}
+      {# deployment.pod.topology_spread_constraints #}
+      {% if kiali_vars.deployment.pod is defined and kiali_vars.deployment.pod.topology_spread_constraints is defined and kiali_vars.deployment.pod.topology_spread_constraints | length > 0 %}
+      {%   set _=kiali_vars['deployment']['pod'].pop('topology_spread_constraints') %}
+      {%   set kiali_vars=kiali_vars | combine({'deployment': {'pod': {'topology_spread_constraints': current_cr.spec.deployment.pod.topology_spread_constraints }}}, recursive=True) %}
       {% endif %}
       {# #}
       {# deployment.extra_labels #}
