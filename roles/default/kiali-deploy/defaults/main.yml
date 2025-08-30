@@ -171,7 +171,7 @@ kiali_defaults:
       enabled: true
       external_url: ""
       health_check_url: ""
-      #internal_url
+      internal_url: "http://grafana.istio-system:3000"
       is_core: false
     istio:
       component_status:
@@ -207,9 +207,9 @@ kiali_defaults:
       enabled: false
       external_url: ""
       health_check_url: ""
-      #internal_url
+      internal_url: "http://perses.istio-system:4000"
       is_core: false
-      project: ""
+      project: "istio"
     prometheus:
       auth:
         ca_file: ""
@@ -318,6 +318,13 @@ kiali_defaults:
         include_istio_resources: true
         include_validations: true
         show_include_toggles: false
+      mesh:
+        find_options:
+        - description: "Find: unhealthy nodes"
+          expression: "! healthy"
+        hide_options:
+        - description: "Hide: healthy nodes"
+          expression: "healthy"
       metrics_inbound:
         aggregations: []
       metrics_outbound:
@@ -368,6 +375,7 @@ kiali_defaults:
           protocol: "http"
           skip_verify: false
           tls_enabled: false
+        sampling_rate: 0.5
     port: 20001
     profiler:
       enabled: false
