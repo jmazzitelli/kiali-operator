@@ -1,0 +1,19 @@
+name: Test nip.io Resolution
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-nipio:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check nip.io resolution
+        run: |
+          echo "Testing nip.io DNS..."
+          nslookup test.127.0.0.1.nip.io
+          dig +short test.127.0.0.1.nip.io
+          
+      - name: Curl nip.io
+        run: |
+          echo "Curling test.127.0.0.1.nip.io"
+          curl -v http://test.127.0.0.1.nip.io || true
