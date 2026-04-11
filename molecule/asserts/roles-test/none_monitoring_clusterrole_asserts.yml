@@ -1,0 +1,13 @@
+- name: Get monitoring cluster role binding
+  vars:
+    instance_name: "{{ kiali.instance_name | default('kiali') }}"
+  k8s_info:
+    api_version: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    name: "{{ instance_name }}-monitoring"
+  register: empty_monitoring_crb
+
+- name: Assert that no monitoring ClusterRoleBinding exists
+  assert:
+    that: empty_monitoring_crb.resources | length == 0
+    fail_msg: "Monitoring ClusterRoleBinding still exists"

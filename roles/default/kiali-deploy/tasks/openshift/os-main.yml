@@ -97,6 +97,28 @@
   - is_openshift == True
   - kiali_vars.deployment.cluster_wide_access == False
 
+- name: Create monitoring RoleBindings on all accessible namespaces on OpenShift
+  vars:
+    role_namespaces: "{{ discovery_selector_namespaces }}"
+  k8s:
+    template:
+    - "templates/openshift/rolebinding-monitoring.yaml"
+  when:
+  - is_openshift == True
+  - kiali_vars.deployment.cluster_wide_access == False
+  - '"thanos-querier.openshift-monitoring" in (kiali_vars.external_services.prometheus.url | default(""))'
+  - '":9092" in (kiali_vars.external_services.prometheus.url | default(""))'
+
+- name: Create monitoring ClusterRoleBinding on OpenShift
+  k8s:
+    template:
+    - "templates/openshift/clusterrolebinding-monitoring.yaml"
+  when:
+  - is_openshift == True
+  - kiali_vars.deployment.cluster_wide_access == True
+  - '"thanos-querier.openshift-monitoring" in (kiali_vars.external_services.prometheus.url | default(""))'
+  - '":9091" in (kiali_vars.external_services.prometheus.url | default(""))'
+
 - include_tasks: update-status-progress.yml
   vars:
     status_progress_message: "Creating OpenShift resources"

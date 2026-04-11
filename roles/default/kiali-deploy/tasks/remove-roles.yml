@@ -12,6 +12,13 @@
       ...
       ---
       apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        name: "{{ kiali_vars.deployment.instance_name }}-monitoring"
+        namespace: "{{ namespace }}"
+      ...
+      ---
+      apiVersion: rbac.authorization.k8s.io/v1
       kind: Role
       metadata:
         name: "{{ kiali_vars.deployment.instance_name }}"

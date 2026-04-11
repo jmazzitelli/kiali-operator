@@ -1,0 +1,9 @@
+- import_tasks: ../common/wait_for_kiali_cr_changes.yml
+
+- name: "Remove Prometheus URL from Kiali CR"
+  vars:
+    current_kiali_cr: "{{ kiali_cr_list.resources[0] }}"
+  set_fact:
+    new_kiali_cr: "{{ current_kiali_cr | combine({'spec': {'external_services': {'prometheus': {'url': ''}}}}, recursive=True) }}"
+
+- import_tasks: ../common/set_kiali_cr.yml

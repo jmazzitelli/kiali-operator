@@ -1,0 +1,16 @@
+- name: Get monitoring role bindings
+  vars:
+    instance_name: "{{ kiali.instance_name | default('kiali') }}"
+  k8s_info:
+    api_version: rbac.authorization.k8s.io/v1
+    kind: RoleBinding
+    namespace: "{{ item }}"
+    name: "{{ instance_name }}-monitoring"
+  register: empty_monitoring_rolebindings
+  with_items: "{{ role_namespaces_to_test | default([ kiali.install_namespace ]) }}"
+
+- name: Assert that no monitoring role bindings exist
+  assert:
+    that: item.resources | length == 0
+    fail_msg: "Monitoring RoleBinding still exists"
+  with_items: "{{ empty_monitoring_rolebindings.results }}"

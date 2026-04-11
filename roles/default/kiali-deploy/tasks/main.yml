@@ -1099,6 +1099,7 @@
     current_instance_name: "{{ current_configmap.data['config.yaml'] | from_yaml | json_query('deployment.instance_name') }}"
     current_auth_strategy: "{{ current_configmap.data['config.yaml'] | from_yaml | json_query('auth.strategy') }}"
     current_cluster_wide_access: "{{ current_configmap.data['config.yaml'] | from_yaml | json_query('deployment.cluster_wide_access') }}"
+    current_prometheus_url: "{{ current_configmap.data['config.yaml'] | from_yaml | json_query('external_services.prometheus.url') | default('') }}"
   when:
   - current_configmap is defined
   - current_configmap.data is defined
@@ -1147,6 +1148,74 @@
   - current_cluster_wide_access is defined
   - current_cluster_wide_access|bool == True
   - kiali_vars.deployment.cluster_wide_access == False
+
+- name: Delete monitoring RoleBindings from all namespaces when moving to cluster-wide-access
+  k8s:
+    state: absent
+    definition: |
+      {% for namespace in namespaces_no_longer_accessible %}
+      ---
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        name: "{{ kiali_vars.deployment.instance_name }}-monitoring"
+        namespace: "{{ namespace }}"
+      ...
+      {% endfor %}
+  when:
+  - is_openshift == True
+  - namespaces_no_longer_accessible is defined
+  - current_cluster_wide_access is defined
+  - current_cluster_wide_access|bool == False
+  - kiali_vars.deployment.cluster_wide_access == True
+
+- name: Delete monitoring ClusterRoleBinding when moving away from cluster-wide-access
+  ignore_errors: yes
+  k8s:
+    state: absent
+    api_version: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    name: "{{ kiali_vars.deployment.instance_name }}-monitoring"
+  when:
+  - is_openshift == True
+  - current_cluster_wide_access is defined
+  - current_cluster_wide_access|bool == True
+  - kiali_vars.deployment.cluster_wide_access == False
+
+- name: Delete monitoring ClusterRoleBinding when Prometheus URL no longer targets Thanos 9091
+  ignore_errors: yes
+  k8s:
+    state: absent
+    api_version: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    name: "{{ kiali_vars.deployment.instance_name }}-monitoring"
+  when:
+  - is_openshift == True
+  - current_prometheus_url is defined
+  - '"thanos-querier.openshift-monitoring" in current_prometheus_url'
+  - '":9091" in current_prometheus_url'
+  - '":9091" not in (kiali_vars.external_services.prometheus.url | default("")) or "thanos-querier.openshift-monitoring" not in (kiali_vars.external_services.prometheus.url | default(""))'
+
+- name: Delete monitoring RoleBindings when Prometheus URL no longer targets Thanos 9092
+  k8s:
+    state: absent
+    definition: |
+      {% for namespace in namespaces_currently_accessible %}
+      ---
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        name: "{{ kiali_vars.deployment.instance_name }}-monitoring"
+        namespace: "{{ namespace }}"
+      ...
+      {% endfor %}
+  when:
+  - is_openshift == True
+  - namespaces_currently_accessible is defined
+  - current_prometheus_url is defined
+  - '"thanos-querier.openshift-monitoring" in current_prometheus_url'
+  - '":9092" in current_prometheus_url'
+  - '":9092" not in (kiali_vars.external_services.prometheus.url | default("")) or "thanos-querier.openshift-monitoring" not in (kiali_vars.external_services.prometheus.url | default(""))'
 
 # Role Bindings are always "view-only" unless auth.strategy is anonymous and view_only_mode is false.
 # If the view_only_mode or auth.strategy changes, we'll delete the roles to make sure we create the correct ones.

@@ -36,3 +36,210 @@
   - include_tasks: ../common/wait_for_kiali_running.yml
   - include_tasks: ../asserts/roles-test/ro_clusterrole_asserts.yml
   - include_tasks: ../asserts/roles-test/none_role_asserts.yml
+
+  # === OpenShift-only: monitoring RBAC lifecycle tests ===
+  # Currently in cluster_wide_access: true with no Thanos URL — no monitoring RBAC should exist
+  - include_tasks: ../asserts/roles-test/none_monitoring_role_asserts.yml
+    when: is_openshift == True
+  - include_tasks: ../asserts/roles-test/none_monitoring_clusterrole_asserts.yml
+    when: is_openshift == True
+
+  # Switch back to cluster_wide_access: false and set Prometheus URL to 9092
+  - include_tasks: ../common/unset_view_only_mode.yml
+    when: is_openshift == True
+  - include_tasks: ../common/set_discovery_selectors_to_list.yml
+    vars:
+      discovery_selectors: "{{ kiali.discovery_selectors }}"
+    when: is_openshift == True
+  - include_tasks: ../common/set_prometheus_thanos_9092.yml
+    when: is_openshift == True
+  - include_tasks: ../common/wait_for_kiali_cr_changes.yml
+    when: is_openshift == True
+  - include_tasks: ../common/wait_for_kiali_running.yml
+    when: is_openshift == True
+  # Monitoring RoleBindings should now exist; no monitoring ClusterRoleBinding
+  - include_tasks: ../asserts/roles-test/monitoring_role_asserts.yml
+    when: is_openshift == True
+  - include_tasks: ../asserts/roles-test/none_monitoring_clusterrole_asserts.yml
+    when: is_openshift == True
+
+  # --- Namespace removal from discovery selectors while on 9092 ---
+  - name: Create test namespace for discovery selector removal test
+    k8s:
+      state: present
+      definition:
+        apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: kiali-roles-test-ns
+    when: is_openshift == True
+  # Expand discovery selectors to include both namespaces
+  - include_tasks: ../common/set_discovery_selectors_to_list.yml
+    vars:
+      discovery_selectors:
+      - matchLabels:
+          kubernetes.io/metadata.name: istio-system
+      - matchLabels:
+          kubernetes.io/metadata.name: kiali-roles-test-ns
+    when: is_openshift == True
+  - include_tasks: ../common/wait_for_kiali_cr_changes.yml
+    when: is_openshift == True
+  - include_tasks: ../common/wait_for_kiali_running.yml
+    when: is_openshift == True
+  # Monitoring RoleBindings should exist in both namespaces
+  - include_tasks: ../asserts/roles-test/monitoring_role_asserts.yml
+    vars:
+      role_namespaces_to_test:
+      - istio-system
+      - kiali-roles-test-ns
+    when: is_openshift == True
+  - include_tasks: ../asserts/roles-test/none_monitoring_clusterrole_asserts.yml
+    when: is_openshift == True
+  # Narrow discovery selectors back to just istio-system
+  - include_tasks: ../common/set_discovery_selectors_to_list.yml
+    vars:
+      discovery_selectors: "{{ kiali.discovery_selectors }}"
+    when: is_openshift == True
+  - include_tasks: ../common/wait_for_kiali_cr_changes.yml
+    when: is_openshift == True
+  - include_tasks: ../common/wait_for_kiali_running.yml
+    when: is_openshift == True
+  # Monitoring RoleBinding should be removed from kiali-roles-test-ns but still exist in istio-system
+  - include_tasks: ../asserts/roles-test/monitoring_role_asserts.yml
+    when: is_openshift == True
+  - include_tasks: ../asserts/roles-test/none_monitoring_role_asserts.yml
+    vars:
+      role_namespaces_to_test:
+      - kiali-roles-test-ns
+    when: is_openshift == True
+  - include_tasks: ../asserts/roles-test/none_monitoring_clusterrole_asserts.yml
+    when: is_openshift == True
+  # --- URL-only change: 9092 to 9091, staying cluster_wide_access: false ---
+  # Mismatched port/access combination — no monitoring RBAC should exist
+  - include_tasks: ../common/set_prometheus_thanos_9091.yml
+    when: is_openshift == True
+  - include_tasks: ../common/wait_for_kiali_cr_changes.yml
+    when: is_openshift == True
+  - include_tasks: ../common/wait_for_kiali_running.yml
+    when: is_openshift == True
+  - include_tasks: ../asserts/roles-test/none_monitoring_role_asserts.yml
+    when: is_openshift == True
+  - include_tasks: ../asserts/roles-test/none_monitoring_clusterrole_asserts.yml
+    when: is_openshift == True
+
+  # Switch to cluster_wide_access: true (URL already 9091) — ClusterRoleBinding should be created
+  - include_tasks: ../common/set_discovery_selectors_to_all.yml
+    when: is_openshift == True
+  - include_tasks: ../common/wait_for_kiali_cr_changes.yml
+    when: is_openshift == True
+  - include_tasks: ../common/wait_for_kiali_running.yml
+    when: is_openshift == True
+  - include_tasks: ../asserts/roles-test/monitoring_clusterrole_asserts.yml
+    when: is_openshift == True
+  - include_tasks: ../asserts/roles-test/none_monitoring_role_asserts.yml
+    when: is_openshift == True
+
+  # --- URL-only change: 9091 to 9092, staying cluster_wide_access: true ---
+  # Mismatched port/access combination — no monitoring RBAC should exist
+  - include_tasks: ../common/set_prometheus_thanos_9092.yml
+    when: is_openshift == True
+  - include_tasks: ../common/wait_for_kiali_cr_changes.yml
+    when: is_openshift == True
+  - include_tasks: ../common/wait_for_kiali_running.yml
+    when: is_openshift == True
+  - include_tasks: ../asserts/roles-test/none_monitoring_clusterrole_asserts.yml
+    when: is_openshift == True
+  - include_tasks: ../asserts/roles-test/none_monitoring_role_asserts.yml
+    when: is_openshift == True
+
+  # Switch back to cluster_wide_access: false (URL already 9092) — RoleBindings should be created
+  - include_tasks: ../common/set_discovery_selectors_to_list.yml
+    vars:
+      discovery_selectors: "{{ kiali.discovery_selectors }}"
+    when: is_openshift == True
+  - include_tasks: ../common/wait_for_kiali_cr_changes.yml
+    when: is_openshift == True
+  - include_tasks: ../common/wait_for_kiali_running.yml
+    when: is_openshift == True
+  - include_tasks: ../asserts/roles-test/monitoring_role_asserts.yml
+    when: is_openshift == True
+  - include_tasks: ../asserts/roles-test/none_monitoring_clusterrole_asserts.yml
+    when: is_openshift == True
+
+  # Switch to cluster_wide_access: true and URL 9091 — ClusterRoleBinding replaces RoleBindings
+  - include_tasks: ../common/set_discovery_selectors_to_all.yml
+    when: is_openshift == True
+  - include_tasks: ../common/set_prometheus_thanos_9091.yml
+    when: is_openshift == True
+  - include_tasks: ../common/wait_for_kiali_cr_changes.yml
+    when: is_openshift == True
+  - include_tasks: ../common/wait_for_kiali_running.yml
+    when: is_openshift == True
+  - include_tasks: ../asserts/roles-test/monitoring_clusterrole_asserts.yml
+    when: is_openshift == True
+  - include_tasks: ../asserts/roles-test/none_monitoring_role_asserts.yml
+    when: is_openshift == True
+
+  # --- URL change from 9091 to empty while ClusterRoleBinding exists ---
+  - include_tasks: ../common/unset_prometheus_thanos.yml
+    when: is_openshift == True
+  - include_tasks: ../common/wait_for_kiali_cr_changes.yml
+    when: is_openshift == True
+  - include_tasks: ../common/wait_for_kiali_running.yml
+    when: is_openshift == True
+  - include_tasks: ../asserts/roles-test/none_monitoring_clusterrole_asserts.yml
+    when: is_openshift == True
+  - include_tasks: ../asserts/roles-test/none_monitoring_role_asserts.yml
+    when: is_openshift == True
+
+  # === CR Deletion Cleanup Test: verify kiali-remove cleans up monitoring RoleBindings ===
+
+  # Switch to cluster_wide_access: false + URL 9092 so per-namespace monitoring RoleBindings exist
+  - include_tasks: ../common/set_discovery_selectors_to_list.yml
+    vars:
+      discovery_selectors: "{{ kiali.discovery_selectors }}"
+    when: is_openshift == True
+  - include_tasks: ../common/set_prometheus_thanos_9092.yml
+    when: is_openshift == True
+  - include_tasks: ../common/wait_for_kiali_cr_changes.yml
+    when: is_openshift == True
+  - include_tasks: ../common/wait_for_kiali_running.yml
+    when: is_openshift == True
+  - include_tasks: ../asserts/roles-test/monitoring_role_asserts.yml
+    when: is_openshift == True
+  - include_tasks: ../asserts/roles-test/none_monitoring_clusterrole_asserts.yml
+    when: is_openshift == True
+
+  # Delete the Kiali CR to trigger the kiali-remove role
+  - name: Delete the Kiali CR to test kiali-remove role cleanup
+    k8s:
+      state: absent
+      api_version: kiali.io/v1alpha1
+      kind: Kiali
+      namespace: "{{ cr_namespace }}"
+      name: "{{ custom_resource.metadata.name }}"
+      wait: yes
+      wait_timeout: 600
+
+  - name: Wait for Kiali ConfigMap to be removed
+    vars:
+      instance_name: "{{ kiali.instance_name | default('kiali') }}"
+    k8s_info:
+      api_version: v1
+      kind: ConfigMap
+      namespace: "{{ kiali.install_namespace }}"
+      name: "{{ instance_name }}"
+    register: doomed_cm
+    until:
+    - doomed_cm is success
+    - doomed_cm.resources | length == 0
+    retries: "{{ wait_retries }}"
+    delay: 5
+
+  # Assert all RBAC has been cleaned up by the kiali-remove role
+  - include_tasks: ../asserts/roles-test/none_clusterrole_asserts.yml
+  - include_tasks: ../asserts/roles-test/none_role_asserts.yml
+  - include_tasks: ../asserts/roles-test/none_monitoring_role_asserts.yml
+    when: is_openshift == True
+  - include_tasks: ../asserts/roles-test/none_monitoring_clusterrole_asserts.yml
+    when: is_openshift == True
